@@ -1,93 +1,75 @@
 package com.morka.serial.read.povs4;
 
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import jssc.SerialPort;
+import jssc.SerialPortEvent;
+import jssc.SerialPortEventListener;
+import jssc.SerialPortException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 
 public class MainController {
-    private static final String STM_PORT = "COM3";
-    private final Executor executor;
+    private static final String STM_PORT = "COM4";
     @FXML
     private Label label;
 
-    public MainController(ExecutorService threadPool) {
-        executor = threadPool;
-    }
-
     @FXML
     void initialize() {
-        System.out.println(getAvailableSerialPorts());
-        // todo handle close
-        var in = getPortInputStream(STM_PORT);
-        executor.execute(new SerialReader(label, in));
+        serialPort = new SerialPort(STM_PORT);
+        try {
+            serialPort.openPort();
+            serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE); /*Задаем основные параметры протокола UART*/
+            serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
+            serialPort.addEventListener(new EventListener(label), SerialPort.MASK_RXCHAR);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
     }
 
-    private InputStream getPortInputStream(String portName) {
+    public void onStop() {
         try {
-            var portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-            if (portIdentifier.isCurrentlyOwned())
-                throw new RuntimeException("Port, " + portName + ", is in use.");
-
-            var openWaitTime = 2000;
-            var commPort = portIdentifier.open(MainController.class.getName(), openWaitTime);
-            if (!(commPort instanceof SerialPort serialPort))
-                throw new RuntimeException("Only serial ports are supported.");
-
-            serialPort.setSerialPortParams(
-                    9600,
-                    SerialPort.DATABITS_8,
-                    SerialPort.STOPBITS_1,
-                    SerialPort.PARITY_NONE
-            );
-            return serialPort.getInputStream();
-        } catch (NoSuchPortException | UnsupportedCommOperationException | PortInUseException | IOException e) {
+            serialPort.closePort();
+        } catch (SerialPortException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static Set<String> getAvailableSerialPorts() {
-        var ports = new HashSet<String>();
-        var thePorts = CommPortIdentifier.getPortIdentifiers();
-        while (thePorts.hasMoreElements()) {
-            var com = (CommPortIdentifier) thePorts.nextElement();
-            if (com.getPortType() != CommPortIdentifier.PORT_SERIAL)
-                continue;
+    private static SerialPort serialPort;
 
-            try {
-                var thePort = com.open("CommUtil", 50);
-                thePort.close();
-                ports.add(com.getName());
-            } catch (PortInUseException e) {
-                System.out.println("Port, " + com.getName() + ", is in use.");
-            }
-        }
-        return ports;
-    }
+    private record EventListener(Label label) implements SerialPortEventListener {
+        private static final StringBuffer BUFFER = new StringBuffer();
+        private static final Pattern MESSAGE_PATTERN =
+                Pattern.compile("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?\\|[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");
+        private static final String MESSAGE_SEPARATOR = "\n";
+        private static final String FIELDS_SEPARATOR = "\\|";
 
-    private record SerialReader(Label label, InputStream in) implements Runnable {
-        public void run() {
-            var buffer = new byte[1024];
-            var len = -1;
+        public void serialEvent(SerialPortEvent event) {
+            if (!event.isRXCHAR() || event.getEventValue() <= 0)
+                return;
+
+            var data = "";
             try {
-                while ((len = in.read(buffer)) > -1) {
-                    var data = new String(buffer, 0, len);
-                    System.out.println(data);
-                    Platform.runLater(() -> label.setText(data));
-                }
-            } catch (IOException e) {
+                data = serialPort.readString(event.getEventValue());
+                if (!MESSAGE_SEPARATOR.equals(data))
+                    return;
+
+                var lastNewLineIndex = BUFFER.lastIndexOf(MESSAGE_SEPARATOR);
+                if (lastNewLineIndex == -1)
+                    return;
+
+                var message = BUFFER.substring(lastNewLineIndex + 1);
+                if (!MESSAGE_PATTERN.matcher(message).matches())
+                    return;
+
+                var fields = message.split(FIELDS_SEPARATOR);
+                var light = Double.parseDouble(fields[0].trim());
+                var temperature = Double.parseDouble(fields[1].trim());
+
+            } catch (SerialPortException e) {
                 e.printStackTrace();
+            } finally {
+                BUFFER.append(data);
             }
         }
     }

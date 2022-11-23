@@ -25,8 +25,8 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-    mainModule = 'com.morka.serial.read.povs4'
-    mainClass = 'com.morka.serial.read.povs4.HelloApplication'
+    mainModule = 'com.morka.serial.read.povs'
+    mainClass = 'com.morka.serial.read.povs4.MainApplication'
 }
 
 javafx {
@@ -35,14 +35,14 @@ javafx {
 }
 
 dependencies {
-    implementation files('libs/RXTXcomm.jar')
+    implementation files('libs/jssc-2.9.4.jar')
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 
 extraJavaModuleInfo {
-    module("RXTXcomm.jar", "RXTXcomm", "2.2.2") {
-        exports("gnu.io")
+    module("jssc-2.9.4.jar", "jssc", "2.9.4") {
+        exports("jssc")
     }
 }
 
