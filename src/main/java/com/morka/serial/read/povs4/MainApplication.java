@@ -11,20 +11,20 @@ import java.io.IOException;
 
 public class MainApplication extends Application {
     private static final MainController CONTROLLER = new MainController();
-    private static final String STM_PORT = "COM4";
+    private static final String STM_PORT = "COM3";
     private static SerialPort serialPort;
 
     @Override
     public void init() {
-//        serialPort = new SerialPort(STM_PORT);
-//        try {
-//            serialPort.openPort();
-//            serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-//            serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
-//            serialPort.addEventListener(new EventListener(serialPort, CONTROLLER::onDataUpdate), SerialPort.MASK_RXCHAR);
-//        } catch (SerialPortException e) {
-//            e.printStackTrace();
-//        }
+        serialPort = new SerialPort(STM_PORT);
+        try {
+            serialPort.openPort();
+            serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
+            serialPort.addEventListener(new EventListener(serialPort, CONTROLLER::onDataUpdate), SerialPort.MASK_RXCHAR);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

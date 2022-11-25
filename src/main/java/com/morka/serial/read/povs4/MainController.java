@@ -24,28 +24,6 @@ public class MainController {
         lightChart.getData().add(lightSeries);
         temperatureSeries.setName("Temp in C");
         temperatureChart.getData().add(temperatureSeries);
-
-
-
-        // TODO: remove
-        DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("ss.ms")
-                .withZone(ZoneId.systemDefault());
-        new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                var light = ThreadLocalRandom.current().nextDouble(20, 100);
-                var temperature = ThreadLocalRandom.current().nextDouble(15, 20);
-                var time = FORMATTER.format(Instant.now());
-                Platform.runLater(() -> {
-                    lightSeries.getData().add(new XYChart.Data<>(time, light));
-                    temperatureSeries.getData().add(new XYChart.Data<>(time, temperature));
-                });
-            }
-        }).start();
     }
 
     public void onDataUpdate(EventListener.Data data) {

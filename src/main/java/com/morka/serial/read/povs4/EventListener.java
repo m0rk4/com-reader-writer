@@ -44,6 +44,9 @@ public record EventListener(SerialPort serialPort, Consumer<Data> dataConsumer) 
             var temperature = Double.parseDouble(fields[1].trim());
             var time = FORMATTER.format(Instant.now());
 
+            System.out.println();
+            System.out.println(light);
+            System.out.println(temperature);
             dataConsumer().accept(new Data(
                     new XYChart.Data<>(time, light),
                     new XYChart.Data<>(time, temperature)
