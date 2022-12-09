@@ -4,7 +4,10 @@
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -16,6 +19,7 @@
    <center>
       <GridPane hgap="10.0" BorderPane.alignment="CENTER">
         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
         </columnConstraints>
@@ -23,7 +27,7 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" GridPane.vgrow="ALWAYS">
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" GridPane.columnIndex="1" GridPane.vgrow="ALWAYS">
                <children>
                   <Label text="Light">
                      <font>
@@ -43,7 +47,7 @@
                   <Insets top="10.0" />
                </padding>
             </VBox>
-            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" GridPane.columnIndex="1" GridPane.vgrow="ALWAYS">
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" GridPane.columnIndex="2" GridPane.vgrow="ALWAYS">
                <children>
                   <Label text="Temperature">
                      <font>
@@ -66,7 +70,26 @@
                   <Insets top="10.0" />
                </padding>
             </VBox>
+            <LineChart fx:id="potentialChart" title="Potential">
+              <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
+            </LineChart>
          </children>
       </GridPane>
    </center>
+   <top>
+      <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <items>
+            <ToggleButton fx:id="connectToggle" mnemonicParsing="false" text="Connect/Disconnect" />
+            <ToggleButton fx:id="startToggle" mnemonicParsing="false" text="Start/Stop" />
+            <CheckBox fx:id="pCheckBox" mnemonicParsing="false" selected="true" text="Potential" />
+            <CheckBox fx:id="lCheckBox" mnemonicParsing="false" selected="true" text="Light %" />
+            <CheckBox fx:id="tCheckBox" mnemonicParsing="false" selected="true" text="Temperature" />
+         </items>
+      </ToolBar>
+   </top>
 </BorderPane>
